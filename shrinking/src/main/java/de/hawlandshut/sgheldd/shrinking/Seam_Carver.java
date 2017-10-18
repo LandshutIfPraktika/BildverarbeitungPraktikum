@@ -11,7 +11,10 @@ import java.util.LinkedList;
 
 public class Seam_Carver implements PlugInFilter {
 
+    private int numberOfSeams = 0;
+
     public int setup(final String arg, final ImagePlus imp) {
+        numberOfSeams = Integer.parseInt(arg);
         return DOES_RGB | NO_UNDO | NO_CHANGES;
     }
 
@@ -24,14 +27,20 @@ public class Seam_Carver implements PlugInFilter {
             final Deque<int[]> seams = new LinkedList<>();
 
             final long start = System.nanoTime();
-            final ImageProcessor carvedImage = getCarvedImage(ip, seams, width - height);
+            final ImageProcessor carvedImage = getCarvedImage(ip, seams, numberOfSeams);
             System.out.println((System.nanoTime() - start) / 1000000 + "ms");
 
 
             ByteProcessor oldSeams = new ByteProcessor(carvedImage.getWidth(), carvedImage.getHeight());
+            final byte[] pixels = (byte[]) oldSeams.getPixels();
+            for (int i = 0; i < pixels.length; i++) {
+                pixels[i] = (byte) 0xff;
+            }
+
+
+            byte grey = (byte) 0x00;
             for (int[] seam : seams) {
-                byte grey = (byte) 0xff;
-                oldSeams = drawSeam(oldSeams, seam, grey--);
+                oldSeams = drawSeam(oldSeams, seam, grey-=3);
             }
 
 

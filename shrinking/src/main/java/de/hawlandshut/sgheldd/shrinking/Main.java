@@ -17,6 +17,6 @@ public class Main {
 
         //imagePlus.show();
 
-        IJ.runPlugIn(imagePlus, Seam_Carver.class.getName(), null);
+        IJ.runPlugIn(imagePlus, Seam_Carver.class.getName(), "68");
     }
 }
