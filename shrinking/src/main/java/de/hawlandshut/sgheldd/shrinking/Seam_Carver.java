@@ -22,32 +22,29 @@ public class Seam_Carver implements PlugInFilter {
 
         final int height = ip.getHeight();
         final int width = ip.getWidth();
-        if (width > height) {
 
-            final Deque<int[]> seams = new LinkedList<>();
+        final Deque<int[]> seams = new LinkedList<>();
 
-            final long start = System.nanoTime();
-            final ImageProcessor carvedImage = getCarvedImage(ip, seams, numberOfSeams);
-            System.out.println((System.nanoTime() - start) / 1000000 + "ms");
-
-
-            ByteProcessor oldSeams = new ByteProcessor(carvedImage.getWidth(), carvedImage.getHeight());
-            final byte[] pixels = (byte[]) oldSeams.getPixels();
-            for (int i = 0; i < pixels.length; i++) {
-                pixels[i] = (byte) 0xff;
-            }
+        final long start = System.nanoTime();
+        final ImageProcessor carvedImage = getCarvedImage(ip, seams, numberOfSeams);
+        System.out.println((System.nanoTime() - start) / 1000000 + "ms");
 
 
-            byte grey = (byte) 0x00;
-            for (int[] seam : seams) {
-                oldSeams = drawSeam(oldSeams, seam, grey-=3);
-            }
-
-
-            new ImagePlus("carved", carvedImage).show();
-            new ImagePlus("seams", oldSeams).show();
+        ByteProcessor oldSeams = new ByteProcessor(carvedImage.getWidth(), carvedImage.getHeight());
+        final byte[] pixels = (byte[]) oldSeams.getPixels();
+        for (int i = 0; i < pixels.length; i++) {
+            pixels[i] = (byte) 0xff;
         }
 
+
+        byte grey = (byte) 0x00;
+        for (int[] seam : seams) {
+            oldSeams = drawSeam(oldSeams, seam, grey -= 3);
+        }
+
+
+        new ImagePlus("carved", carvedImage).show();
+        new ImagePlus("seams", oldSeams).show();
     }
 
 
@@ -74,10 +71,16 @@ public class Seam_Carver implements PlugInFilter {
         return dst;
     }
 
-    private ImageProcessor getCarvedImage(final ImageProcessor ip, final Deque<int[]> seams, final int removedSeames) {
+    ImageProcessor getCarvedImage(final ImageProcessor ip, final Deque<int[]> seams, final int removedSeames) {
+
         ImageProcessor duplicate = ip.duplicate();
         while (duplicate.getWidth() > ip.getWidth() - removedSeames) {
-            final ByteProcessor ip_gray = makeGray(duplicate);
+            final ByteProcessor ip_gray;
+            if (duplicate instanceof ColorProcessor) {
+                ip_gray = makeGray(duplicate);
+            } else {
+                ip_gray = (ByteProcessor) duplicate;
+            }
             ip_gray.findEdges();
             final int height = ip_gray.getHeight();
             final int width = ip_gray.getWidth();
@@ -90,7 +93,7 @@ public class Seam_Carver implements PlugInFilter {
         return duplicate;
     }
 
-    private ColorProcessor removeSeam(final ImageProcessor duplicate, final int[] seam, final int width, final int height) {
+    ColorProcessor removeSeam(final ImageProcessor duplicate, final int[] seam, final int width, final int height) {
         final int newWidth = width - 1;
         final ColorProcessor colorProcessor = new ColorProcessor(newWidth, height);
         final int[] colorPixels = (int[]) colorProcessor.getPixels();
@@ -110,7 +113,7 @@ public class Seam_Carver implements PlugInFilter {
         return colorProcessor;
     }
 
-    private int[] getSeam(final int[] cumulativeEnergy, final int width, final int height) {
+    int[] getSeam(final int[] cumulativeEnergy, final int width, final int height) {
         int minimumPosition = 0;
         int minimumValue = Integer.MAX_VALUE;
         for (int column = width * (height - 1); column < cumulativeEnergy.length; column++) {
@@ -176,7 +179,7 @@ public class Seam_Carver implements PlugInFilter {
         return cumulativeEnergy;
     }
 
-    private ByteProcessor makeGray(final ImageProcessor ip) {
+    ByteProcessor makeGray(final ImageProcessor ip) {
         final ByteProcessor ip_gray = new ByteProcessor(ip.getWidth(), ip.getHeight());
         final int[] rgb_pixels = (int[]) ip.getPixels(); // efficient access
         final byte[] gray_pixels = (byte[]) ip_gray.getPixels(); // efficient access
