@@ -5,6 +5,7 @@ import ij.plugin.filter.PlugInFilter;
 import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
+import util.Util;
 
 import java.util.Deque;
 import java.util.LinkedList;
@@ -40,7 +41,7 @@ public class Seam_Carver implements PlugInFilter {
 
             byte grey = (byte) 0x00;
             for (int[] seam : seams) {
-                oldSeams = drawSeam(oldSeams, seam, grey-=3);
+                oldSeams = drawSeam(oldSeams, seam, grey -= 3);
             }
 
 
@@ -77,7 +78,7 @@ public class Seam_Carver implements PlugInFilter {
     private ImageProcessor getCarvedImage(final ImageProcessor ip, final Deque<int[]> seams, final int removedSeames) {
         ImageProcessor duplicate = ip.duplicate();
         while (duplicate.getWidth() > ip.getWidth() - removedSeames) {
-            final ByteProcessor ip_gray = makeGray(duplicate);
+            final ByteProcessor ip_gray = Util.makeGray(duplicate);
             ip_gray.findEdges();
             final int height = ip_gray.getHeight();
             final int width = ip_gray.getWidth();
@@ -174,18 +175,5 @@ public class Seam_Carver implements PlugInFilter {
             }
         }
         return cumulativeEnergy;
-    }
-
-    private ByteProcessor makeGray(final ImageProcessor ip) {
-        final ByteProcessor ip_gray = new ByteProcessor(ip.getWidth(), ip.getHeight());
-        final int[] rgb_pixels = (int[]) ip.getPixels(); // efficient access
-        final byte[] gray_pixels = (byte[]) ip_gray.getPixels(); // efficient access
-        for (int i = 0; i < rgb_pixels.length; i++) {
-            int r = (rgb_pixels[i] & 0xff0000) >> 16; // efficient access
-            int g = (rgb_pixels[i] & 0x00ff00) >> 8; // efficient access
-            int b = (rgb_pixels[i] & 0x0000ff); // efficient access
-            gray_pixels[i] = (byte) (0.299 * r + 0.587 * g + 0.114 * b + 0.5); // no Math.round()!
-        }
-        return ip_gray;
     }
 }

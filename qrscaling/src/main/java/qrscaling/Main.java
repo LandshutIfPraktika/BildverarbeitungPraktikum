@@ -1,4 +1,4 @@
-package de.hawlandshut.sgheldd.shrinking;
+package qrscaling;
 
 import ij.IJ;
 import ij.ImageJ;
@@ -9,7 +9,7 @@ public class Main {
         final ImageJ imageJ = new ImageJ();
         imageJ.exitWhenQuitting(true);
 
-        final String input = "/Users/shared/Dropbox/Landshut/WiSe2017/bildverarbeitung/GruenesHaus.jpg";
+        final String input = "/Users/Shared/Dropbox/Landshut/WiSe2017/bildverarbeitung/QR_Blau.jpg";
         final ImagePlus imagePlus = IJ.openImage(input);
         if (imagePlus == null) {
             IJ.error("could not open " + input);
@@ -17,6 +17,6 @@ public class Main {
 
         //imagePlus.show();
 
-        IJ.runPlugIn(imagePlus, Seam_Carver.class.getName(), "56");
+        IJ.runPlugIn(imagePlus, Qr_Scaler.class.getName(), "56");
     }
 }
