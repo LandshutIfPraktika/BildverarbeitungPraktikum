@@ -9,7 +9,7 @@ public class Main {
         final ImageJ imageJ = new ImageJ();
         imageJ.exitWhenQuitting(true);
 
-        final String input = "/Users/shared/Dropbox/Landshut/WiSe2017/bildverarbeitung/GruenesHaus.jpg";
+        final String input = System.getenv("image.path");
         final ImagePlus imagePlus = IJ.openImage(input);
         if (imagePlus == null) {
             IJ.error("could not open " + input);
