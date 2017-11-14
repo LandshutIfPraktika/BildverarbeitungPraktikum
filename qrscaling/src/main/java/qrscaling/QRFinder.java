@@ -29,10 +29,19 @@ public class QRFinder {
         final byte[] pixels = prepareImage(orig);
         final LinkedList<PossiblePattern> possiblePatterns = getPossiblePatterns(pixels);
 
-        for (PossiblePattern possiblePattern : possiblePatterns) {
+        for (final PossiblePattern possiblePattern : possiblePatterns) {
             final Pattern pattern = handlePossiblePattern(possiblePattern);
             if (pattern != null) {
-                patternSet.add(pattern);
+                boolean add = true;
+                for (Pattern existingPatterns : patternSet) {
+                    if (existingPatterns.isInside(pattern)) {
+                        add = false;
+                    }
+                }
+
+                if (add) {
+                    patternSet.add(pattern);
+                }
             }
         }
         return patternSet.size() == 3;
@@ -152,6 +161,11 @@ public class QRFinder {
             this.row = row;
             this.column = column;
             this.featureSize = featureSize;
+        }
+
+        public boolean isInside(final Pattern that) {
+            final int distanceSquared = (this.row - that.row) * (this.row - that.row) + (this.column - that.column) * (this.column - that.column);
+            return distanceSquared < (featureSize * 3.5) * (featureSize * 3.5);
         }
     }
 
