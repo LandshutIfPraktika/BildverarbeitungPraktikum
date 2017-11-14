@@ -21,75 +21,12 @@ public class Qr_Scaler implements PlugInFilter {
 
     public void run(final ImageProcessor ip) {
 
-        final ByteProcessor gray = Util.makeGray(ip);
+        final QRFinder qrFinder = new QRFinder();
 
-        //gray.findEdges();
-        gray.autoThreshold();
+        qrFinder.find(ip);
+        qrFinder.draw(ip);
 
-        final int width = gray.getWidth();
-        final int height = gray.getHeight();
-
-        final byte[] pixels = (byte[]) gray.getPixels();
-
-        for (int row = 0; row < height; row++) {
-            final int rowStart = row * width;
-            for (int col = 0; col < width; col++) {
-                final int pos = rowStart + col;
-                if (pixels[pos] != 0) {
-                    continue;
-                }
-
-                final Queue<Integer> stack = new LinkedList<>();
-                stack.add(pos);
-                final LinkedList<Integer> area = floodFill(stack, pixels, height, width);
-
-                System.err.println(area);
-            }
-        }
-
-
-        new ImagePlus("edges", gray).show();
-    }
-
-
-    private LinkedList<Integer> floodFill(final Queue<Integer> stack, final byte[] pixels, final int height, final int width) {
-        final int[] shifts = new int[]{
-                -width, -width - 1, -width + 1, -1, +1, +width, +width - 1, +width + 1
-        };
-        final LinkedList<Integer> area = new LinkedList<>();
-
-        final int size = height * width;
-        while (!stack.isEmpty()) {
-            final int position = stack.poll();
-            pixels[position] = floodFillMarker;
-            area.add(position);
-
-
-            for (int i = 0; i < shifts.length; i++) {
-                final int candidate = position + shifts[i];
-                if (candidate < size && candidate >= 0 && pixels[candidate] == 0) {
-                    stack.add(candidate);
-                }
-            }
-        }
-        return area;
-    }
-
-
-    private static class Position {
-        private final int row;
-        private final int column;
-
-
-        private Position(final int row, final int column) {
-            this.row = row;
-            this.column = column;
-        }
-
-        private Position(final int abs, final int height, final int width) {
-            this.row = abs / width;
-            this.column = abs % width;
-        }
+        new ImagePlus("edges", ip).show();
     }
 
     private ByteProcessor addWhiteBorder(final ByteProcessor gray) {
