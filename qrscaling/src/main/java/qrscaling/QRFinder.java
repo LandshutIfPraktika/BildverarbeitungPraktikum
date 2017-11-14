@@ -41,7 +41,9 @@ public class QRFinder {
     public void draw(final ImageProcessor orig) {
         System.err.println(patternSet.size());
         for (Pattern pattern : patternSet) {
-            orig.drawOval(pattern.column, pattern.row,10,10);
+            final int featureOffset = (int) (pattern.featureSize * 3.5d);
+
+            orig.drawRect(pattern.column - featureOffset, pattern.row - featureOffset, 2 * featureOffset, 2 * featureOffset);
         }
     }
 
@@ -53,20 +55,21 @@ public class QRFinder {
         final byte[] pixels = possiblePattern.pixels;
 
         int centreCol = centreFromEndOfPattern(pixelCounts, col);
-        final int centreRow = crossCheck(row, centreCol, pixelCounts[2], result.totalPixelCount, pixels, width);
+        final int centreRow = crossCheck(row, centreCol, pixelCounts[2], result.totalPixelCount, pixels, width).centre;
         if (centreRow == -1) {
             return null;
         }
-        centreCol = crossCheck(centreRow, centreCol, pixelCounts[2], result.totalPixelCount, pixels, 1);
+        final CrossCheckResult crossCheckResult = crossCheck(centreRow, centreCol, pixelCounts[2], result.totalPixelCount, pixels, 1);
+        centreCol = crossCheckResult.centre;
         if (centreCol == -1) {
             return null;
         }
         centreCol = centreCol % width;
-        final int diagonal = crossCheck(centreRow, centreCol, pixelCounts[2], result.totalPixelCount, pixels, width + 1);
+        final int diagonal = crossCheck(centreRow, centreCol, pixelCounts[2], result.totalPixelCount, pixels, width + 1).centre;
         if (diagonal == -1) {
             return null;
         }
-        return new Pattern(centreRow, centreCol);
+        return new Pattern(centreRow, centreCol, crossCheckResult.result.featureSize);
     }
 
     byte[] prepareImage(ImageProcessor orig) {
@@ -143,15 +146,17 @@ public class QRFinder {
     private static class Pattern {
         final int row;
         final int column;
+        final int featureSize;
 
-        private Pattern(int row, int column) {
+        private Pattern(int row, int column, int featureSize) {
             this.row = row;
             this.column = column;
+            this.featureSize = featureSize;
         }
     }
 
 
-    int crossCheck(int centreRow, int centreCol, int centreCount, int totalPixelCount, byte[] pixels, int stepDistance) {
+    CrossCheckResult crossCheck(int centreRow, int centreCol, int centreCount, int totalPixelCount, byte[] pixels, int stepDistance) {
         final int startPos = centreRow * width + centreCol;
         final int[] checkPixelCounts = new int[5];
 
@@ -161,7 +166,7 @@ public class QRFinder {
             pos -= stepDistance;
         }
         if (pos < 0) {
-            return -1;
+            return CrossCheckResult.FAILED;
         }
         while (pos >= 0 && pixels[pos] == white) {
             checkPixelCounts[State.FIRST_WHITE.ordinal()]++;
@@ -169,7 +174,7 @@ public class QRFinder {
         }
         if (pos < 0 || pixels[State.FIRST_WHITE.ordinal()] > centreCount) {
             // we must have whole of the FIRST_WHITE
-            return -1;
+            return CrossCheckResult.FAILED;
         }
         while (pos >= 0 && pixels[pos] == black) {
             checkPixelCounts[State.FIRST_BLACK.ordinal()]++;
@@ -177,7 +182,7 @@ public class QRFinder {
         }
         if (pixels[State.FIRST_BLACK.ordinal()] > centreCount) {
             // if the image ends after the first black we can live with it
-            return -1;
+            return CrossCheckResult.FAILED;
         }
 
         // lets return to the middle
@@ -187,14 +192,14 @@ public class QRFinder {
             pos += stepDistance;
         }
         if (pos >= pixels.length) {
-            return -1;
+            return CrossCheckResult.FAILED;
         }
         while (pos < pixels.length && pixels[pos] == white) {
             checkPixelCounts[State.SECOND_WHITE.ordinal()]++;
             pos += stepDistance;
         }
         if (pos >= pixels.length || checkPixelCounts[State.SECOND_WHITE.ordinal()] > centreCount) {
-            return -1;
+            return CrossCheckResult.FAILED;
         }
 
         while (pos < pixels.length && pixels[pos] == black) {
@@ -202,19 +207,31 @@ public class QRFinder {
             pos += stepDistance;
         }
         if (checkPixelCounts[State.SECOND_BLACK.ordinal()] > centreCount) {
-            return -1;
+            return CrossCheckResult.FAILED;
         }
 
         final PatternCheckResult patternCheckResult = checkPatternRatio(checkPixelCounts);
         //some sanity checks
         if (5 * Math.abs(patternCheckResult.totalPixelCount - totalPixelCount) > 2 * totalPixelCount) {
-            return -1;
+            return CrossCheckResult.FAILED;
         }
         if (!patternCheckResult.found) {
-            return -1;
+            return CrossCheckResult.FAILED;
         }
-        return centreFromEndOfPattern(checkPixelCounts, pos / stepDistance);
+        return new CrossCheckResult(centreFromEndOfPattern(checkPixelCounts, pos / stepDistance), patternCheckResult);
     }
+
+    static class CrossCheckResult {
+        private static CrossCheckResult FAILED = new CrossCheckResult(-1, PatternCheckResult.NO_RESULT);
+        final int centre;
+        final PatternCheckResult result;
+
+        CrossCheckResult(final int centre, final PatternCheckResult result) {
+            this.centre = centre;
+            this.result = result;
+        }
+    }
+
 
     int centreFromEndOfPattern(final int[] pixelCounts, final int end) {
         return (int) ((end - pixelCounts[4] - pixelCounts[3]) - ((double) pixelCounts[2] / 2.0d));
