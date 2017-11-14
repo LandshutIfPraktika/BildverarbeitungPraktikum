@@ -9,7 +9,7 @@ public class Main {
         final ImageJ imageJ = new ImageJ();
         imageJ.exitWhenQuitting(true);
 
-        final String input = "img/QR_Blau.jpg";
+        final String input = "/Users/Shared/Dropbox/Landshut/WiSe2017/bildverarbeitung/bildverarbeitung_praktikum/qrscaling/src/main/resources/img/QR_Blau.jpg";
         final ImagePlus imagePlus = IJ.openImage(input);
         if (imagePlus == null) {
             IJ.error("could not open " + input);

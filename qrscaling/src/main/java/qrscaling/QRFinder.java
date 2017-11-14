@@ -31,14 +31,17 @@ public class QRFinder {
 
         for (PossiblePattern possiblePattern : possiblePatterns) {
             final Pattern pattern = handlePossiblePattern(possiblePattern);
-            patternSet.add(pattern);
+            if (pattern != null) {
+                patternSet.add(pattern);
+            }
         }
         return patternSet.size() == 3;
     }
 
     public void draw(final ImageProcessor orig) {
+        System.err.println(patternSet.size());
         for (Pattern pattern : patternSet) {
-            orig.drawDot(pattern.column, pattern.row);
+            orig.drawOval(pattern.column, pattern.row,10,10);
         }
     }
 
