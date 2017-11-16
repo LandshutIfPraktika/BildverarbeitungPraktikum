@@ -15,7 +15,6 @@ public class Qr_Scaler implements PlugInFilter {
     private int numberOfSeams = 0;
 
     public int setup(final String arg, final ImagePlus imp) {
-        numberOfSeams = Integer.parseInt(arg);
         return DOES_RGB | NO_UNDO | NO_CHANGES;
     }
 
@@ -24,7 +23,14 @@ public class Qr_Scaler implements PlugInFilter {
         final QRFinder qrFinder = new QRFinder();
 
         qrFinder.find(ip);
-        qrFinder.draw(ip);
+        //qrFinder.draw(ip);
+        qrFinder.rotate(ip);
+
+        final QRFinder secondRound = new QRFinder();
+        secondRound.find(ip);
+        secondRound.draw(ip);
+        //secondRound.rotate(ip);
+        secondRound.crop(ip);
 
         new ImagePlus("edges", ip).show();
     }
