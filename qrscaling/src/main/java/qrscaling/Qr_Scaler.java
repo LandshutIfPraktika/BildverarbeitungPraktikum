@@ -20,6 +20,8 @@ public class Qr_Scaler implements PlugInFilter {
 
     public void run(final ImageProcessor ip) {
 
+        new ImagePlus("original",ip.duplicate()).show();
+
         final QRFinder qrFinder = new QRFinder();
 
         qrFinder.find(ip);

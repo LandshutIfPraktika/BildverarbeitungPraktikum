@@ -1,14 +1,11 @@
 package qrscaling;
 
 import ij.ImagePlus;
-import ij.gui.Roi;
 import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
-import sun.security.krb5.internal.PAData;
 import util.Util;
 
-import java.awt.*;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -37,9 +34,9 @@ public class QRFinder {
         final int last = getBottomLeft(patterns);
 
         final Pattern bottomLeft = patterns[last];
-        final int endY = (int) (bottomLeft.column + 7 * bottomLeft.featureSize);
+        final int endY = (int) (bottomLeft.row + 3.5 * bottomLeft.featureSize);
 
-        final int dist = endY - starty;
+        final int dist = Math.abs(endY - starty);
 
         orig.setRoi(startx, starty, dist, dist);
         final ImageProcessor crop = orig.crop();
@@ -52,7 +49,7 @@ public class QRFinder {
         int maxPos = getPos(patterns[0]);
         for (int i = 1; i < 3; i++) {
             final int pos = getPos(patterns[i]);
-            if (pos < maxPos) {
+            if (pos > maxPos) {
                 maxPos = pos;
                 last = i;
             }
@@ -127,11 +124,11 @@ public class QRFinder {
 
             orig.drawString("0", firstPattern.column, firstPattern.row);
 
-            final int dx = secondPattern.column - thirdPattern.column;
-            final int dy = thirdPattern.row - secondPattern.row;
+            final int dx = Math.abs(secondPattern.column - thirdPattern.column);
+            final int dy = Math.abs(thirdPattern.row - secondPattern.row);
 
             final double tan = (double) dy / (double) dx;
-            final double arc = Math.atan(tan) * Math.PI + 2;
+            final double arc = 45 - (Math.atan(tan) * 360 / Math.PI);
 
             System.err.println(arc);
             orig.rotate(arc);
@@ -140,10 +137,10 @@ public class QRFinder {
             first = 1;
             orig.drawString("1", secondPattern.column, secondPattern.row);
 
-            final int dx = firstPattern.column - thirdPattern.column;
-            final int dy = thirdPattern.row - firstPattern.row;
+            final int dx = Math.abs(firstPattern.column - thirdPattern.column);
+            final int dy = Math.abs(thirdPattern.row - firstPattern.row);
             final double tan = (double) dy / (double) dx;
-            final double arc = Math.atan(tan) * Math.PI + 2;
+            final double arc = 45 - (Math.atan(tan) * 360 / Math.PI);
 
             System.err.println(arc);
             orig.rotate(arc);
@@ -152,36 +149,27 @@ public class QRFinder {
             first = 2;
             orig.drawString("2", thirdPattern.column, thirdPattern.row);
 
-            final int dx = secondPattern.column - firstPattern.column;
-            final int dy = firstPattern.row - secondPattern.row;
+            final int dx = Math.abs(secondPattern.column - firstPattern.column);
+            final int dy = Math.abs(firstPattern.row - secondPattern.row);
 
             final double tan = (double) dy / (double) dx;
-            final double arc = Math.atan(tan) * Math.PI + 2;
+            final double arc = 45 - (Math.atan(tan) * 360 / Math.PI);
+
 
             System.err.println(arc);
             orig.rotate(arc);
         }
 
-/*        final Pattern leftTop = patterns[first];
 
-
-
-
-
-        int distance;
-        if (leftTop == firstPattern) {
-            distance = (int) Math.sqrt(oneToTwo);
-        } else if (leftTop == secondPattern) {
-            distance = (int) Math.sqrt(twoToThree);
-        } else {
-            distance = (int) Math.sqrt(oneToThree);
+        final Pattern topLeft = patterns[first];
+        final int last = getBottomLeft(patterns);
+        final Pattern bottomLeft = patterns[last];
+        orig.drawString("t", bottomLeft.column, bottomLeft.row);
+        if (Math.abs(bottomLeft.row - topLeft.row) < 40) {
+            orig.rotate(180);
         }
 
-        distance += 8 * leftTop.featureSize;
-
-        orig.setRoi((int) (leftTop.column - 4 * leftTop.featureSize), (int) (leftTop.row - 4 * leftTop.featureSize), distance, distance);
-        final ImageProcessor crop = orig.crop();
-        new ImagePlus("crop", crop).show();*/
+        new ImagePlus("rot", orig).show();
 
     }
 
@@ -280,7 +268,7 @@ public class QRFinder {
                         if (result.found) {
                             possiblePatterns.add(new PossiblePattern(pixels, result, pixelCounts.clone(), row, col));
                         }
-                        // no finder pattern found we have to transition back to state SECOND_WHITE
+                        // no finder patte * Math.PI rn found we have to transition back to state SECOND_WHITE
                         pixelCounts[0] = pixelCounts[2];
                         pixelCounts[1] = pixelCounts[3];
                         pixelCounts[2] = pixelCounts[4];
