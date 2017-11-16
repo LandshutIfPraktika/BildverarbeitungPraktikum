@@ -14,6 +14,7 @@ public class QRFinder {
     private final static byte white = -1;
     private final static byte black = 0;
     private static final int STEP_COUNT = 3;
+    public static final double FEATURE_SIZE_VARIANCE = 2.0d;
 
     private ByteProcessor binary;
     private int height;
@@ -269,7 +270,7 @@ public class QRFinder {
 
         final int featureSize = (int) Math.ceil((double) totalPixelCount / 7.0d);
         //maybe needs adjustment
-        final int maxSigma = featureSize / 2;
+        final int maxSigma = (int) ((double)featureSize / FEATURE_SIZE_VARIANCE);
         final boolean check = Math.abs(featureSize - pixelCounts[0]) <= maxSigma
                 && Math.abs(featureSize - pixelCounts[1]) <= maxSigma
                 && Math.abs(featureSize - pixelCounts[3]) <= maxSigma
