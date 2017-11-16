@@ -14,6 +14,7 @@ public class QRFinder {
     private final static byte white = -1;
     private final static byte black = 0;
     private static final int STEP_COUNT = 3;
+    public static final int FEATURE_SIZE_SENSITIVITY = 2;
 
     private ByteProcessor binary;
     private int height;
@@ -63,8 +64,8 @@ public class QRFinder {
         final PatternCheckResult result = possiblePattern.result;
         final byte[] pixels = possiblePattern.pixels;
 
-        int centreCol = centreFromEndOfPattern(pixelCounts, col);
-        final int centreRow = crossCheck(row, centreCol, pixelCounts[2], result.totalPixelCount, pixels, width).centre;
+        int centreCol = centreFromEndOfPattern(pixelCounts, col, 1);
+        final int centreRow = crossCheck(row, centreCol, pixelCounts[2], result.totalPixelCount, pixels, width).centre / width;
         if (centreRow == -1) {
             return null;
         }
@@ -232,7 +233,11 @@ public class QRFinder {
         if (!patternCheckResult.found) {
             return CrossCheckResult.FAILED;
         }
-        return new CrossCheckResult(centreFromEndOfPattern(checkPixelCounts, pos / stepDistance), patternCheckResult);
+
+        // we need to return to the last pixel of the pattern
+        pos -= stepDistance;
+
+        return new CrossCheckResult(centreFromEndOfPattern(checkPixelCounts, pos, stepDistance), patternCheckResult);
     }
 
     static class CrossCheckResult {
@@ -247,8 +252,8 @@ public class QRFinder {
     }
 
 
-    int centreFromEndOfPattern(final int[] pixelCounts, final int end) {
-        return (int) ((end - pixelCounts[4] - pixelCounts[3]) - ((double) pixelCounts[2] / 2.0d));
+    int centreFromEndOfPattern(final int[] pixelCounts, final int end, final int stepDistance) {
+        return (int) (end - ((pixelCounts[4] + pixelCounts[3]) + ((double) pixelCounts[2] / 2.0d)) * stepDistance);
     }
 
     private PatternCheckResult checkPatternRatio(final int[] pixelCounts) {
@@ -269,7 +274,7 @@ public class QRFinder {
 
         final int featureSize = (int) Math.ceil((double) totalPixelCount / 7.0d);
         //maybe needs adjustment
-        final int maxSigma = featureSize / 2;
+        final int maxSigma = featureSize / FEATURE_SIZE_SENSITIVITY;
         final boolean check = Math.abs(featureSize - pixelCounts[0]) <= maxSigma
                 && Math.abs(featureSize - pixelCounts[1]) <= maxSigma
                 && Math.abs(featureSize - pixelCounts[3]) <= maxSigma

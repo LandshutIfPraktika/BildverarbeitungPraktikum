@@ -65,9 +65,9 @@ public class Qr_ScalerTest {
         final LinkedList<PossiblePattern> possiblePatterns = qrFinder.getPossiblePatterns(pixels);
         final PossiblePattern possiblePattern = possiblePatterns.get(0);
 
-        final int centreCol = qrFinder.centreFromEndOfPattern(possiblePattern.pixelCounts, possiblePattern.col);
+        final int centreCol = qrFinder.centreFromEndOfPattern(possiblePattern.pixelCounts, possiblePattern.col,1);
         assertEquals(4, centreCol);
-        final int centreRow = qrFinder.crossCheck(possiblePattern.row, centreCol, possiblePattern.pixelCounts[2], possiblePattern.result.totalPixelCount, possiblePattern.pixels, byteProcessor.getWidth()).centre;
+        final int centreRow = qrFinder.crossCheck(possiblePattern.row, centreCol, possiblePattern.pixelCounts[2], possiblePattern.result.totalPixelCount, possiblePattern.pixels, byteProcessor.getWidth()).centre / 9;
         assertEquals(4, centreRow);
     }
 
@@ -79,16 +79,17 @@ public class Qr_ScalerTest {
         final LinkedList<PossiblePattern> possiblePatterns = qrFinder.getPossiblePatterns(pixels);
         assertEquals(2, possiblePatterns.size());
         final PossiblePattern firstPattern = possiblePatterns.get(0);
-        final int firstCentreCol = qrFinder.centreFromEndOfPattern(firstPattern.pixelCounts, firstPattern.col);
+        final int firstCentreCol = qrFinder.centreFromEndOfPattern(firstPattern.pixelCounts, firstPattern.col, 1);
         assertEquals(4, firstCentreCol);
-        final int firstCentreRow = qrFinder.crossCheck(firstPattern.row, firstCentreCol, firstPattern.pixelCounts[2], firstPattern.result.totalPixelCount, firstPattern.pixels, byteProcessor.getWidth()).centre;
+        final int width = byteProcessor.getWidth();
+        final int firstCentreRow = qrFinder.crossCheck(firstPattern.row, firstCentreCol, firstPattern.pixelCounts[2], firstPattern.result.totalPixelCount, firstPattern.pixels, width).centre / width;
         assertEquals(4, firstCentreRow);
 
 
         final PossiblePattern secondPattern = possiblePatterns.get(1);
-        final int centreCol = qrFinder.centreFromEndOfPattern(secondPattern.pixelCounts, secondPattern.col);
+        final int centreCol = qrFinder.centreFromEndOfPattern(secondPattern.pixelCounts, secondPattern.col, 1);
         assertEquals(13, centreCol);
-        final int centreRow = qrFinder.crossCheck(secondPattern.row, centreCol, secondPattern.pixelCounts[2], secondPattern.result.totalPixelCount, secondPattern.pixels, byteProcessor.getWidth()).centre;
+        final int centreRow = qrFinder.crossCheck(secondPattern.row, centreCol, secondPattern.pixelCounts[2], secondPattern.result.totalPixelCount, secondPattern.pixels, width).centre / width;
         assertEquals(4, centreRow);
     }
 
@@ -100,9 +101,9 @@ public class Qr_ScalerTest {
         final LinkedList<PossiblePattern> possiblePatterns = qrFinder.getPossiblePatterns(pixels);
         final PossiblePattern possiblePattern = possiblePatterns.get(0);
 
-        int centreCol = qrFinder.centreFromEndOfPattern(possiblePattern.pixelCounts, possiblePattern.col);
+        int centreCol = qrFinder.centreFromEndOfPattern(possiblePattern.pixelCounts, possiblePattern.col,1);
         assertEquals(4, centreCol);
-        final int centreRow = qrFinder.crossCheck(possiblePattern.row, centreCol, possiblePattern.pixelCounts[2], possiblePattern.result.totalPixelCount, possiblePattern.pixels, byteProcessor.getWidth()).centre;
+        final int centreRow = qrFinder.crossCheck(possiblePattern.row, centreCol, possiblePattern.pixelCounts[2], possiblePattern.result.totalPixelCount, possiblePattern.pixels, byteProcessor.getWidth()).centre / 9;
         assertEquals(4, centreRow);
         centreCol = qrFinder.crossCheck(centreRow, centreCol, possiblePattern.pixelCounts[2], possiblePattern.result.totalPixelCount, possiblePattern.pixels, 1).centre % byteProcessor.getWidth();
         assertEquals(4, centreCol);

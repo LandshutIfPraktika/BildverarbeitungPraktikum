@@ -4,10 +4,6 @@ import ij.ImagePlus;
 import ij.plugin.filter.PlugInFilter;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
-import util.Util;
-
-import java.util.LinkedList;
-import java.util.Queue;
 
 public class Qr_Scaler implements PlugInFilter {
 
@@ -23,7 +19,9 @@ public class Qr_Scaler implements PlugInFilter {
 
         final QRFinder qrFinder = new QRFinder();
 
+        final long start = System.currentTimeMillis();
         qrFinder.find(ip);
+        System.out.println(System.currentTimeMillis() - start);
         qrFinder.draw(ip);
 
         new ImagePlus("edges", ip).show();
