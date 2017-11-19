@@ -29,23 +29,25 @@ public class QRFinder {
         final Pattern topLeft = patterns[first];
         int last = getBottomLeft(patterns);
         Pattern bottomLeft = patterns[last];
-
-
-        if (Math.abs(bottomLeft.row - topLeft.row) < 40) {
-            orig.rotate(180);
-            last = getBottomLeft(patterns);
-            bottomLeft = patterns[last];
+        Pattern topRight = null;
+        for (int i = 0; i < 3; i++) {
+            if (i != first && i != last) {
+                topRight = patterns[i];
+            }
         }
+
 
         final int startx = (int) ((int) topLeft.column - 3.5 * topLeft.featureSize);
         final int starty = (int) ((int) topLeft.row - 3.5 * topLeft.featureSize);
 
 
         final int endY = (int) (bottomLeft.row + 3.5 * bottomLeft.featureSize);
+        final int endX = (int) (topRight.column + 3.5 * topRight.featureSize);
 
-        final int dist = Math.abs(endY - starty);
+        final int distY = Math.abs(endY - starty);
+        final int distX = Math.abs(endX - startx);
 
-        orig.setRoi(startx, starty, dist, dist);
+        orig.setRoi(startx, starty, distX, distY);
         final ImageProcessor crop = orig.crop();
         new ImagePlus("crop", crop).show();
     }
@@ -174,7 +176,12 @@ public class QRFinder {
 
         System.err.println("Arc: " + arc);
         orig.rotate(-arc);
-        rotatePatterns(patterns, -arc);
+        rotatePatterns(patterns, Math.toRadians(-arc));
+
+        for (Pattern pattern : patterns) {
+            orig.drawDot(pattern.column, pattern.row);
+        }
+        new ImagePlus("rot", orig).show();
 
         final int first = getTopLeft(patterns);
         final Pattern topLeft = patterns[first];
@@ -184,10 +191,9 @@ public class QRFinder {
 
         if (Math.abs(bottomLeft.row - topLeft.row) < 40) {
             orig.rotate(180);
-            rotatePatterns(patterns, 180);
+            rotatePatterns(patterns, Math.PI);
         }
 
-        new ImagePlus("rot", orig).show();
     }
 
     private void rotatePatterns(final Pattern[] patterns, final double alpha) {
@@ -364,8 +370,10 @@ public class QRFinder {
         }
 
         public void rotate(final double alpha) {
-            this.column = (int) (this.column * Math.cos(alpha) - this.row * Math.sin(alpha));
-            this.row = (int) (this.column * Math.sin(alpha) + this.row * Math.cos(alpha));
+            int oldColumn = this.column;
+            int oldRow = this.row;
+            this.column = (int) (oldColumn * Math.cos(alpha) - oldRow * Math.sin(alpha));
+            this.row = (int) (oldColumn * Math.sin(alpha) + oldRow * Math.cos(alpha));
         }
 
         public void translate(final int dColumn, final int dRow) {

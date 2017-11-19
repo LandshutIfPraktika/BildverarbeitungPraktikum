@@ -23,16 +23,12 @@ public class Qr_Scaler implements PlugInFilter {
         new ImagePlus("original",ip.duplicate()).show();
 
         final QRFinder qrFinder = new QRFinder();
+        ip.setValue(0x00ff0000);
 
         qrFinder.find(ip);
-        //qrFinder.draw(ip);
         qrFinder.rotate(ip);
-
-        final QRFinder secondRound = new QRFinder();
-        secondRound.find(ip);
-        secondRound.draw(ip);
-        //secondRound.rotate(ip);
-        secondRound.crop(ip);
+        qrFinder.draw(ip);
+        qrFinder.crop(ip);
 
         new ImagePlus("edges", ip).show();
     }
