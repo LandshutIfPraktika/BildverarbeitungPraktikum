@@ -119,53 +119,41 @@ public class QRFinder {
         final int threshold = (int) (((oneToTwo + oneToThree + twoToThree) / 3) * 0.2d);
 
         int first = -1;
+        int dx = 0;
+        int dy = 0;
         if (Math.abs(oneToTwo - oneToThree) < threshold) {
             first = 0;
 
             orig.drawString("0", firstPattern.column, firstPattern.row);
 
-            final int dx = secondPattern.column - thirdPattern.column;
-            final int dy = secondPattern.column - thirdPattern.row;
-
-            System.err.println("DX: " + dx + " DY: " + dy);
-
-            final double tan = (double) dy / (double) dx;
-            final double arc = 45 - (Math.atan(tan) * 360 / Math.PI);
-
-            System.err.println(arc);
-            orig.rotate(arc);
+            dx = secondPattern.column - thirdPattern.column;
+            dy = secondPattern.column - thirdPattern.row;
 
         } else if (Math.abs(oneToTwo - twoToThree) < threshold) {
             first = 1;
             orig.drawString("1", secondPattern.column, secondPattern.row);
 
-            final int dx = firstPattern.column - thirdPattern.column;
-            final int dy = firstPattern.row - thirdPattern.row;
-
-            System.err.println("DX: " + dx + " DY: " + dy);
-
-            final double tan = (double) dy / (double) dx;
-            final double arc = 45 - (Math.atan(tan) * 360 / Math.PI);
-
-            System.err.println(arc);
-            orig.rotate(arc);
-
+            dx = firstPattern.column - thirdPattern.column;
+            dy = firstPattern.row - thirdPattern.row;
         } else if (Math.abs(twoToThree - oneToThree) < threshold) {
             first = 2;
             orig.drawString("2", thirdPattern.column, thirdPattern.row);
 
-            final int dx = secondPattern.column - firstPattern.column;
-            final int dy = secondPattern.row - firstPattern.row;
-
-            System.err.println("DX: " + dx + " DY: " + dy);
-
-            final double tan = (double) dy / (double) dx;
-            final double arc = 45 - (Math.atan(tan) * 360 / Math.PI);
-
-
-            System.err.println(arc);
-            orig.rotate(arc);
+            dx = secondPattern.column - firstPattern.column;
+            dy = secondPattern.row - firstPattern.row;
         }
+
+        System.err.println("DX: " + dx + " DY: " + dy);
+
+        final double tan = Math.atan2(dy, dx);
+
+        System.err.println("Tan: " + tan);
+
+        final double arc = 45 - (Math.atan(tan) * 360 / Math.PI);
+
+
+        System.err.println(arc);
+        //orig.rotate(arc);
 
 
         final Pattern topLeft = patterns[first];
