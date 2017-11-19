@@ -174,10 +174,38 @@ public class QRFinder {
 
         System.err.println("Arc: " + arc);
         orig.rotate(-arc);
+        rotatePatterns(patterns, -arc);
+
+        final int first = getTopLeft(patterns);
+        final Pattern topLeft = patterns[first];
+        int last = getBottomLeft(patterns);
+        Pattern bottomLeft = patterns[last];
+
+
+        if (Math.abs(bottomLeft.row - topLeft.row) < 40) {
+            orig.rotate(180);
+            rotatePatterns(patterns, 180);
+        }
 
         new ImagePlus("rot", orig).show();
     }
 
+    private void rotatePatterns(final Pattern[] patterns, final double alpha) {
+        for (Pattern pattern : patterns) {
+            rotatePattern(pattern, alpha);
+        }
+    }
+
+    private void rotatePattern(final Pattern pattern, final double alpha) {
+
+        final int middleRow = this.height / 2;
+        final int middleColumn = this.width / 2;
+        final Pattern middle = new Pattern(middleRow, middleColumn, 0);
+        middle.rotate(alpha);
+
+        pattern.rotate(alpha);
+        pattern.translate(middleColumn - middle.column, middleRow - middle.row);
+    }
 
 
     private int getTopLeft(final Pattern[] patterns) {
@@ -333,6 +361,16 @@ public class QRFinder {
                     ", column=" + column +
                     ", featureSize=" + featureSize +
                     '}';
+        }
+
+        public void rotate(final double alpha) {
+            this.column = (int) (this.column * Math.cos(alpha) - this.row * Math.sin(alpha));
+            this.row = (int) (this.column * Math.sin(alpha) + this.row * Math.cos(alpha));
+        }
+
+        public void translate(final int dColumn, final int dRow) {
+            this.column += dColumn;
+            this.row += dRow;
         }
     }
 
