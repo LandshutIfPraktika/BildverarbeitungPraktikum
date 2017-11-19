@@ -37,8 +37,8 @@ public class QRFinder {
         }
 
 
-        final int startx = (int) ((int) topLeft.column - 3.5 * topLeft.featureSize);
-        final int starty = (int) ((int) topLeft.row - 3.5 * topLeft.featureSize);
+        final int startx = (int) (topLeft.column - 3.5 * topLeft.featureSize);
+        final int starty = (int) (topLeft.row - 3.5 * topLeft.featureSize);
 
 
         final int endY = (int) (bottomLeft.row + 3.5 * bottomLeft.featureSize);

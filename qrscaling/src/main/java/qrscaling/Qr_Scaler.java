@@ -29,8 +29,6 @@ public class Qr_Scaler implements PlugInFilter {
         qrFinder.rotate(ip);
         qrFinder.draw(ip);
         qrFinder.crop(ip);
-
-        new ImagePlus("edges", ip).show();
     }
 
     private ByteProcessor addWhiteBorder(final ByteProcessor gray) {
