@@ -27,13 +27,20 @@ public class QRFinder {
 
         final int first = getTopLeft(patterns);
         final Pattern topLeft = patterns[first];
+        int last = getBottomLeft(patterns);
+        Pattern bottomLeft = patterns[last];
+
+
+        if (Math.abs(bottomLeft.row - topLeft.row) < 40) {
+            orig.rotate(180);
+            last = getBottomLeft(patterns);
+            bottomLeft = patterns[last];
+        }
 
         final int startx = (int) ((int) topLeft.column - 3.5 * topLeft.featureSize);
         final int starty = (int) ((int) topLeft.row - 3.5 * topLeft.featureSize);
 
-        final int last = getBottomLeft(patterns);
 
-        final Pattern bottomLeft = patterns[last];
         final int endY = (int) (bottomLeft.row + 3.5 * bottomLeft.featureSize);
 
         final int dist = Math.abs(endY - starty);
@@ -76,8 +83,9 @@ public class QRFinder {
             if (pattern != null) {
                 boolean add = true;
                 for (Pattern existingPatterns : patternSet) {
-                    if (existingPatterns.isInside(pattern)) {
+                    if (add && existingPatterns.isInside(pattern)) {
                         add = false;
+                        existingPatterns.merge(pattern);
                     }
                 }
 
@@ -86,11 +94,15 @@ public class QRFinder {
                 }
             }
         }
+        System.err.println("Pattern Count: " + patternSet.size());
         return patternSet.size() == 3;
     }
 
     public void draw(final ImageProcessor orig) {
+
+        System.err.println("DrawPatterns: " + patternSet);
         //System.err.println(patternSet.size());
+        orig.setValue(0x00ff0000);
         for (Pattern pattern : patternSet) {
             final int featureOffset = (int) (pattern.featureSize * 3.5d);
 
@@ -100,6 +112,8 @@ public class QRFinder {
     }
 
     public void rotate(final ImageProcessor orig) {
+        System.err.println("RotatePatterns: " + patternSet);
+
         if (patternSet.size() != 3) {
             throw new IllegalStateException("there must be exactly three found patterns.");
         }
@@ -118,55 +132,53 @@ public class QRFinder {
 
         final int threshold = (int) (((oneToTwo + oneToThree + twoToThree) / 3) * 0.2d);
 
-        int first = -1;
-        int dx = 0;
-        int dy = 0;
+        double dx = 0;
+        double dy = 0;
         if (Math.abs(oneToTwo - oneToThree) < threshold) {
-            first = 0;
 
             orig.drawString("0", firstPattern.column, firstPattern.row);
 
             dx = secondPattern.column - thirdPattern.column;
-            dy = secondPattern.column - thirdPattern.row;
+            dy = thirdPattern.row - secondPattern.row;
+
+            //orig.drawLine4(secondPattern.column, secondPattern.row, thirdPattern.column, thirdPattern.row);
 
         } else if (Math.abs(oneToTwo - twoToThree) < threshold) {
-            first = 1;
             orig.drawString("1", secondPattern.column, secondPattern.row);
 
             dx = firstPattern.column - thirdPattern.column;
-            dy = firstPattern.row - thirdPattern.row;
+            dy = thirdPattern.row - firstPattern.row;
+            //orig.drawLine4(firstPattern.column, firstPattern.row, thirdPattern.column, thirdPattern.row);
+
         } else if (Math.abs(twoToThree - oneToThree) < threshold) {
-            first = 2;
             orig.drawString("2", thirdPattern.column, thirdPattern.row);
 
             dx = secondPattern.column - firstPattern.column;
-            dy = secondPattern.row - firstPattern.row;
+            dy = firstPattern.row - secondPattern.row;
+            //orig.drawLine4(secondPattern.column, secondPattern.row, firstPattern.column, firstPattern.row);
+
         }
 
         System.err.println("DX: " + dx + " DY: " + dy);
 
-        final double tan = Math.atan2(dy, dx);
+        double tan = Math.toDegrees(Math.atan2(dy, dx));
+
+        if (tan < 0) {
+            tan = tan + 360;
+        }
 
         System.err.println("Tan: " + tan);
 
-        final double arc = 45 - (Math.atan(tan) * 360 / Math.PI);
+        final double arc = 45 - tan;
 
 
-        System.err.println(arc);
-        //orig.rotate(arc);
-
-
-        final Pattern topLeft = patterns[first];
-        final int last = getBottomLeft(patterns);
-        final Pattern bottomLeft = patterns[last];
-        orig.drawString("t", bottomLeft.column, bottomLeft.row);
-        if (Math.abs(bottomLeft.row - topLeft.row) < 40) {
-            orig.rotate(180);
-        }
+        System.err.println("Arc: " + arc);
+        orig.rotate(-arc);
 
         new ImagePlus("rot", orig).show();
-
     }
+
+
 
     private int getTopLeft(final Pattern[] patterns) {
         final Pattern firstPattern = patterns[0];
@@ -289,9 +301,9 @@ public class QRFinder {
     }
 
     private static class Pattern {
-        final int row;
-        final int column;
-        final int featureSize;
+        int row;
+        int column;
+        int featureSize;
 
         private Pattern(int row, int column, int featureSize) {
             this.row = row;
@@ -306,6 +318,21 @@ public class QRFinder {
 
         public int getDistanceSquared(final Pattern that) {
             return (this.row - that.row) * (this.row - that.row) + (this.column - that.column) * (this.column - that.column);
+        }
+
+        public void merge(final Pattern that) {
+            this.row = (this.row + that.row) / 2;
+            this.column = (this.column + that.column) / 2;
+            this.featureSize = (this.featureSize + that.featureSize) / 2;
+        }
+
+        @Override
+        public String toString() {
+            return "Pattern{" +
+                    "row=" + row +
+                    ", column=" + column +
+                    ", featureSize=" + featureSize +
+                    '}';
         }
     }
 
