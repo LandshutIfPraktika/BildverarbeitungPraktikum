@@ -124,8 +124,10 @@ public class QRFinder {
 
             orig.drawString("0", firstPattern.column, firstPattern.row);
 
-            final int dx = Math.abs(secondPattern.column - thirdPattern.column);
-            final int dy = Math.abs(thirdPattern.row - secondPattern.row);
+            final int dx = secondPattern.column - thirdPattern.column;
+            final int dy = secondPattern.column - thirdPattern.row;
+
+            System.err.println("DX: " + dx + " DY: " + dy);
 
             final double tan = (double) dy / (double) dx;
             final double arc = 45 - (Math.atan(tan) * 360 / Math.PI);
@@ -137,8 +139,11 @@ public class QRFinder {
             first = 1;
             orig.drawString("1", secondPattern.column, secondPattern.row);
 
-            final int dx = Math.abs(firstPattern.column - thirdPattern.column);
-            final int dy = Math.abs(thirdPattern.row - firstPattern.row);
+            final int dx = firstPattern.column - thirdPattern.column;
+            final int dy = firstPattern.row - thirdPattern.row;
+
+            System.err.println("DX: " + dx + " DY: " + dy);
+
             final double tan = (double) dy / (double) dx;
             final double arc = 45 - (Math.atan(tan) * 360 / Math.PI);
 
@@ -149,8 +154,10 @@ public class QRFinder {
             first = 2;
             orig.drawString("2", thirdPattern.column, thirdPattern.row);
 
-            final int dx = Math.abs(secondPattern.column - firstPattern.column);
-            final int dy = Math.abs(firstPattern.row - secondPattern.row);
+            final int dx = secondPattern.column - firstPattern.column;
+            final int dy = secondPattern.row - firstPattern.row;
+
+            System.err.println("DX: " + dx + " DY: " + dy);
 
             final double tan = (double) dy / (double) dx;
             final double arc = 45 - (Math.atan(tan) * 360 / Math.PI);
