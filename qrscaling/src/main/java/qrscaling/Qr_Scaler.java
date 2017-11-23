@@ -13,16 +13,20 @@ public class Qr_Scaler implements PlugInFilter {
 
     public static final byte floodFillMarker = (byte) 0xf0;
     private int numberOfSeams = 0;
+    private String arg;
 
     public int setup(final String arg, final ImagePlus imp) {
+
+        this.arg = arg;
+
         return DOES_RGB | NO_UNDO | NO_CHANGES;
     }
 
     public void run(final ImageProcessor ip) {
 
-        new ImagePlus("original",ip.duplicate()).show();
+        //new ImagePlus("original",ip.duplicate()).show();
 
-        final QRFinder qrFinder = new QRFinder();
+        final QRFinder qrFinder = new QRFinder(arg);
         ip.setValue(0x00ff0000);
 
         qrFinder.find(ip);

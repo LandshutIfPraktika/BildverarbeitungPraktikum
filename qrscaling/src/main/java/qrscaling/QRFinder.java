@@ -21,6 +21,16 @@ public class QRFinder {
     private int height;
     private int width;
     private Set<Pattern> patternSet = new HashSet<>();
+    private String arg;
+
+    public QRFinder() {
+        arg = "none";
+    }
+
+    public QRFinder(final String arg) {
+
+        this.arg = arg;
+    }
 
     public void crop(ImageProcessor orig) {
         final Pattern[] patterns = patternSet.toArray(new Pattern[3]);
@@ -49,7 +59,7 @@ public class QRFinder {
 
         orig.setRoi(startx, starty, distX, distY);
         final ImageProcessor crop = orig.crop();
-        new ImagePlus("crop", crop).show();
+        new ImagePlus(arg + "crop", crop).show();
     }
 
     private int getBottomLeft(final Pattern[] patterns) {
@@ -181,7 +191,7 @@ public class QRFinder {
         for (Pattern pattern : patterns) {
             orig.drawDot(pattern.column, pattern.row);
         }
-        new ImagePlus("rot", orig).show();
+        //new ImagePlus("rot", orig).show();
 
         final int first = getTopLeft(patterns);
         final Pattern topLeft = patterns[first];
