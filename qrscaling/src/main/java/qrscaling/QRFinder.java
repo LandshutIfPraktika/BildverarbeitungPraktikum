@@ -6,6 +6,7 @@ import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 import util.Util;
 
+import javax.management.ImmutableDescriptor;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -127,6 +128,9 @@ public class QRFinder {
         System.err.println("RotatePatterns: " + patternSet);
 
         if (patternSet.size() != 3) {
+
+            draw(orig);
+            new ImagePlus("error",orig).show();
             throw new IllegalStateException("there must be exactly three found patterns.");
         }
 
@@ -286,6 +290,8 @@ public class QRFinder {
         binary = gray;
         height = binary.getHeight();
         width = binary.getWidth();
+
+        //new ImagePlus("binary", binary).show();
 
         return (byte[]) binary.getPixels();
     }
