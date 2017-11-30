@@ -43,7 +43,7 @@ public class Qr_ScalerTest {
     public void test_find_one_possible_patterns() {
         final QRFinder qrFinder = new QRFinder();
         final ByteProcessor byteProcessor = new ByteProcessor(9, 9, onePattern);
-        final byte[] pixels = qrFinder.prepareImage(byteProcessor);
+        final byte[] pixels = qrFinder.prepareImage(byteProcessor, 0);
         final LinkedList<PossiblePattern> possiblePatterns = qrFinder.getPossiblePatterns(pixels);
         assertEquals(1, possiblePatterns.size());
     }
@@ -52,7 +52,7 @@ public class Qr_ScalerTest {
     public void test_find_two_possible_patterns() {
         final QRFinder qrFinder = new QRFinder();
         final ByteProcessor byteProcessor = new ByteProcessor(18, 9, twoPattern);
-        final byte[] pixels = qrFinder.prepareImage(byteProcessor);
+        final byte[] pixels = qrFinder.prepareImage(byteProcessor, 0);
         final LinkedList<PossiblePattern> possiblePatterns = qrFinder.getPossiblePatterns(pixels);
         assertEquals(2, possiblePatterns.size());
     }
@@ -61,7 +61,7 @@ public class Qr_ScalerTest {
     public void test_check_one_vertical() {
         final QRFinder qrFinder = new QRFinder();
         final ByteProcessor byteProcessor = new ByteProcessor(9, 9, onePattern);
-        final byte[] pixels = qrFinder.prepareImage(byteProcessor);
+        final byte[] pixels = qrFinder.prepareImage(byteProcessor, 0);
         final LinkedList<PossiblePattern> possiblePatterns = qrFinder.getPossiblePatterns(pixels);
         final PossiblePattern possiblePattern = possiblePatterns.get(0);
 
@@ -75,7 +75,7 @@ public class Qr_ScalerTest {
     public void test_check_two_vertical() {
         final QRFinder qrFinder = new QRFinder();
         final ByteProcessor byteProcessor = new ByteProcessor(18, 9, twoPattern);
-        final byte[] pixels = qrFinder.prepareImage(byteProcessor);
+        final byte[] pixels = qrFinder.prepareImage(byteProcessor, 0);
         final LinkedList<PossiblePattern> possiblePatterns = qrFinder.getPossiblePatterns(pixels);
         assertEquals(2, possiblePatterns.size());
         final PossiblePattern firstPattern = possiblePatterns.get(0);
@@ -96,7 +96,7 @@ public class Qr_ScalerTest {
     public void test_check_one_complete() {
         final QRFinder qrFinder = new QRFinder();
         final ByteProcessor byteProcessor = new ByteProcessor(9, 9, onePattern);
-        final byte[] pixels = qrFinder.prepareImage(byteProcessor);
+        final byte[] pixels = qrFinder.prepareImage(byteProcessor, 0);
         final LinkedList<PossiblePattern> possiblePatterns = qrFinder.getPossiblePatterns(pixels);
         final PossiblePattern possiblePattern = possiblePatterns.get(0);
 

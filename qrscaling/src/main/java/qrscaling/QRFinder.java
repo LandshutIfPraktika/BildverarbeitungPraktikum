@@ -1,12 +1,14 @@
 package qrscaling;
 
+import fiji.threshold.Auto_Local_Threshold;
 import ij.ImagePlus;
+import ij.plugin.filter.GaussianBlur;
+import ij.process.AutoThresholder;
 import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 import util.Util;
 
-import javax.management.ImmutableDescriptor;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -17,6 +19,7 @@ public class QRFinder {
     private final static byte black = 0;
     private static final int STEP_COUNT = 3;
     public static final double FEATURE_SIZE_VARIANCE = 2.0d;
+    public final static int END_FLAG = 8;
 
     private ByteProcessor binary;
     private int height;
@@ -34,6 +37,10 @@ public class QRFinder {
     }
 
     public void crop(ImageProcessor orig) {
+        if (patternSet.size() != 3) {
+            return;
+        }
+
         final Pattern[] patterns = patternSet.toArray(new Pattern[3]);
 
         final int first = getTopLeft(patterns);
@@ -87,8 +94,8 @@ public class QRFinder {
         FIRST_BLACK, FIRST_WHITE, CENTRE_BLACK, SECOND_WHITE, SECOND_BLACK,
     }
 
-    public boolean find(final ImageProcessor orig) {
-        final byte[] pixels = prepareImage(orig);
+    public boolean find(final ImageProcessor orig, int flag) {
+        final byte[] pixels = prepareImage(orig, flag);
         final LinkedList<PossiblePattern> possiblePatterns = getPossiblePatterns(pixels);
 
         for (final PossiblePattern possiblePattern : possiblePatterns) {
@@ -107,6 +114,10 @@ public class QRFinder {
                 }
             }
         }
+        if (patternSet.size() != 3 && (flag & END_FLAG) == END_FLAG) {
+            new ImagePlus("enhanced", new ByteProcessor(width, height, pixels)).show();
+        }
+
         System.err.println("Pattern Count: " + patternSet.size());
         return patternSet.size() == 3;
     }
@@ -130,8 +141,8 @@ public class QRFinder {
         if (patternSet.size() != 3) {
 
             draw(orig);
-            new ImagePlus("error",orig).show();
-            throw new IllegalStateException("there must be exactly three found patterns.");
+            new ImagePlus("error", orig).show();
+            return;//throw new IllegalStateException("there must be exactly three found patterns.");
         }
 
         final Pattern[] patterns = patternSet.toArray(new Pattern[3]);
@@ -277,8 +288,19 @@ public class QRFinder {
         return new Pattern(centreRow, centreCol, crossCheckResult.result.featureSize);
     }
 
-    byte[] prepareImage(ImageProcessor orig) {
-        final ImageProcessor ip = orig.duplicate();
+    byte[] prepareImage(ImageProcessor orig, int flag) {
+        ImageProcessor ip = orig.duplicate();
+
+        if ((flag & 2) == 2) {
+            final GaussianBlur gaussianBlur = new GaussianBlur();
+            gaussianBlur.blurGaussian(ip, 1.5);
+        }
+
+        if ((flag & 4) == 4) {
+            final GaussianBlur gaussianBlur = new GaussianBlur();
+            gaussianBlur.blurGaussian(ip, 3);
+        }
+
         final ByteProcessor gray;
         if (ip instanceof ColorProcessor) {
             gray = Util.makeGray(ip);
@@ -286,7 +308,17 @@ public class QRFinder {
             gray = (ByteProcessor) ip;
         }
 
-        gray.autoThreshold();
+
+        if ((flag & 8) == 8) {
+            final GaussianBlur gaussianBlur = new GaussianBlur();
+            gaussianBlur.blurGaussian(ip, 1.5);
+            ImagePlus imagePlus = new ImagePlus("", gray);
+            final Auto_Local_Threshold auto_local_threshold = new Auto_Local_Threshold();
+            final Object[] contrasts = auto_local_threshold.exec(imagePlus, "Bernsen", 10, 0, 0, true);
+            imagePlus = (ImagePlus) contrasts[0];
+        } else {
+            gray.autoThreshold();
+        }
         binary = gray;
         height = binary.getHeight();
         width = binary.getWidth();

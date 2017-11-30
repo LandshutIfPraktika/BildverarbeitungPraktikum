@@ -4,10 +4,6 @@ import ij.ImagePlus;
 import ij.plugin.filter.PlugInFilter;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
-import util.Util;
-
-import java.util.LinkedList;
-import java.util.Queue;
 
 public class Qr_Scaler implements PlugInFilter {
 
@@ -26,10 +22,17 @@ public class Qr_Scaler implements PlugInFilter {
 
         //new ImagePlus("original",ip.duplicate()).show();
 
-        final QRFinder qrFinder = new QRFinder(arg);
+        QRFinder qrFinder = new QRFinder(arg);
         ip.setValue(0x00ff0000);
 
-        qrFinder.find(ip);
+        for (int i = 1; !qrFinder.find(ip, i) && i <= QRFinder.END_FLAG; i = i << 1) {
+            qrFinder = new QRFinder(arg);
+        }
+
+        if (!qrFinder.find(ip, 0)) {
+            qrFinder = new QRFinder(arg);
+            qrFinder.find(ip, 1);
+        }
         qrFinder.rotate(ip);
         qrFinder.draw(ip);
         qrFinder.crop(ip);
