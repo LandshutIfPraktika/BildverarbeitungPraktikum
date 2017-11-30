@@ -29,10 +29,6 @@ public class Qr_Scaler implements PlugInFilter {
             qrFinder = new QRFinder(arg);
         }
 
-        if (!qrFinder.find(ip, 0)) {
-            qrFinder = new QRFinder(arg);
-            qrFinder.find(ip, 1);
-        }
         qrFinder.rotate(ip);
         qrFinder.draw(ip);
         qrFinder.crop(ip);
