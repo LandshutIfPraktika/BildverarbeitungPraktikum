@@ -25,6 +25,7 @@
         <module>qrscaling</module>
         <module>shrinking</module>
         <module>util</module>
+        <module>ransac</module>
     </modules>
     <packaging>pom</packaging>
 
