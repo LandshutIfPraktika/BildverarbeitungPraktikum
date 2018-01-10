@@ -22,7 +22,7 @@ public class Main {
                 IJ.error("could not open " + file.getAbsolutePath());
             }
 
-            //imagePlus.show();
+            imagePlus.show();
 
             IJ.runPlugIn(imagePlus, Line_Ransac.class.getName(), file.getName() + "_");
         }
