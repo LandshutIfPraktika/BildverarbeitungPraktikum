@@ -22,7 +22,7 @@ public class Line_Ransac implements PlugInFilter {
 
     @Override
     public int setup(String arg, ImagePlus imp) {
-        return DOES_RGB | NO_UNDO | NO_CHANGES | DOES_8G;
+        return NO_UNDO | NO_CHANGES | DOES_8G;
     }
 
     @Override
@@ -35,7 +35,7 @@ public class Line_Ransac implements PlugInFilter {
 
         Set<Point> points = getPoints();
 
-        Model ransac = ransac(points, 2, 1000, 0.001, points.size()/100);
+        Model ransac = ransac(points, 2, 1000, 0.001, points.size() / 100);
 
         ransac.draw(ip);
     }
@@ -147,7 +147,7 @@ public class Line_Ransac implements PlugInFilter {
             for (Point containingPoint : containingPoints) {
                 simpleRegression.addData(containingPoint.column, containingPoint.row);
                 PointRoi roi = new PointRoi(containingPoint.column, containingPoint.row);
-                roi.setFillColor(new Color(0,255,0));
+                roi.setFillColor(new Color(0, 255, 0));
                 myOverlay.add(roi);
             }
             double intercept = simpleRegression.getIntercept();
